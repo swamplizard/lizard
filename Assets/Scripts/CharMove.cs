@@ -16,6 +16,7 @@ public class CharMove : MonoBehaviour
     private Rigidbody2D enemy;
     private bool facingRight = true;
     public bool isGrounded;
+    private bool usedDoubleJump = false;
 
     void Update()
     {
@@ -28,7 +29,7 @@ public class CharMove : MonoBehaviour
         //CONTROLS
         moveX = Input.GetAxis("Horizontal");
         sprintX = Input.GetAxis("Sprint");
-        if (Input.GetButtonDown("Jump") && isGrounded) {
+        if (Input.GetButtonDown("Jump") && (isGrounded || !usedDoubleJump)) {
             Jump();
             animator.SetBool("IsJumping", true);
         }
@@ -60,8 +61,15 @@ public class CharMove : MonoBehaviour
 
     void Jump()
     {
+        gameObject.GetComponent<Rigidbody2D>().velocity = new Vector2(gameObject.GetComponent<Rigidbody2D>().velocity.x, 0);
         GetComponent<Rigidbody2D>().AddForce(Vector2.up * playerJumpPower);
-        isGrounded = false;
+        if(isGrounded){
+            isGrounded = false;
+        }
+        else if (!usedDoubleJump){
+          usedDoubleJump = true;
+        }
+        
     }
 
     void FlipPlayer()
@@ -75,6 +83,7 @@ public class CharMove : MonoBehaviour
     void OnCollisionEnter2D(Collision2D col) {
       if(col.gameObject.tag != "enemy"){
         isGrounded = true;
+        usedDoubleJump = false;
         animator.SetBool("IsJumping", false);
       }
     }
